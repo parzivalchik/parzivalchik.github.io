@@ -120,7 +120,7 @@ canvas#field { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; display: block
 canvas#field.drag { cursor: grabbing; }
 .readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; font-variant-numeric: tabular-nums; }
 .readout span { color: var(--dim); }
-.eq { color: var(--dim); overflow-x: auto; white-space: nowrap; }
+.eq { color: var(--dim); overflow-x: auto; white-space: pre; display: grid; gap: 2px; }
 
 blockquote { margin: 0; padding-left: 3ch; border-left: 1px solid var(--rule); color: var(--fg); max-width: 44rem; }
 
@@ -185,7 +185,7 @@ img { max-width: 100%; }
           <div><span>turret </span><b id="rTur" style="font-weight:400">—</b></div>
           <div><span>ticks   </span><b id="rTicks" style="font-weight:400">—</b></div>
         </div>
-        <div class="eq">turret = wrap(atan2(144 − y, 72 − x) − heading) · 1.62 ticks/° · limit ±585</div>
+        <div class="eq"><div>turret = wrap(atan2(144 − y, 72 − x) − heading)</div><div>ticks  = turret · 1.62 ticks/°, clamped to ±585</div></div>
       </div>
       <p class="dim" style="max-width:34rem">Same maths as my DECODE TeleOp: odometry gives the pose, the turret holds its aim on the goal while the robot moves.</p>
     </section>
@@ -193,7 +193,7 @@ img { max-width: 100%; }
     <section aria-labelledby="sys-h">
       <h2 class="cmd" id="sys-h">top</h2>
       <div class="status" role="status" aria-live="off">
-        <div class="row"><span>robots</span><b id="sBots">—</b></div>
+        <div class="row"><span>robots</span><b><button class="btn" id="botMinus" type="button" aria-label="Remove a robot">[−]</button> <span id="sBots">—</span> <button class="btn" id="botPlus" type="button" aria-label="Add a robot">[+]</button></b></div>
         <div class="row"><span>mode</span><b id="sMode">wander</b></div>
         <div class="row"><span>nearest</span><b id="sNear">—</b></div>
         <div class="row"><span>cursor</span><b id="sCur">idle</b></div>
@@ -475,12 +475,24 @@ img { max-width: 100%; }
   }
 
   // robots
-  const N = innerWidth < 600 ? 4 : 7;
+  const MAX_BOTS = 30;
+  let N = innerWidth < 600 ? 4 : 7;
+  try { const saved = parseInt(localStorage.getItem('ab-bots'), 10); if (saved >= 0 && saved <= MAX_BOTS) N = saved; } catch (e) {}
   const rnd = (a, b) => a + Math.random() * (b - a);
-  const bots = Array.from({ length: N }, () => ({
-    x: rnd(0, innerWidth), y: rnd(0, innerHeight), vx: rnd(-40, 40), vy: rnd(-40, 40),
+  const makeBot = (x = rnd(0, innerWidth), y = rnd(0, innerHeight)) => ({
+    x, y, vx: rnd(-40, 40), vy: rnd(-40, 40),
     tx: rnd(0, innerWidth), ty: rnd(0, innerHeight), path: [], lastCell: -1, scared: 0
-  }));
+  });
+  const bots = Array.from({ length: N }, () => makeBot());
+  function setBots(n) {
+    n = Math.max(0, Math.min(MAX_BOTS, n));
+    while (bots.length < n) bots.push(makeBot(rnd(20, innerWidth - 20), rnd(20, innerHeight - 20)));
+    while (bots.length > n) bots.pop();
+    try { localStorage.setItem('ab-bots', String(n)); } catch (e) {}
+    $('sBots').textContent = `${bots.length}`;
+  }
+  $('botMinus').addEventListener('click', () => setBots(bots.length - 1));
+  $('botPlus').addEventListener('click', () => setBots(bots.length + 1));
   const MAX_SPEED = 95, MAX_FORCE = 220, ARRIVE_R = 90, FLEE_R = 130, SEP_R = 40;
 
   function limit(v, m) { const l = Math.hypot(v[0], v[1]); return l > m ? [v[0] / l * m, v[1] / l * m] : v; }
@@ -632,7 +644,7 @@ img { max-width: 100%; }
   let lastStat = 0;
   const sEl = { bots: $('sBots'), mode: $('sMode'), near: $('sNear'), cur: $('sCur'), tro: $('sTro') };
   function stat(now) {
-    sEl.bots.textContent = `${bots.length} active · steering`;
+    sEl.bots.textContent = `${bots.length}`;
     const wp = waypoint && now - waypoint.t < 6000;
     sEl.mode.textContent = wp ? `arrive → waypoint (${Math.ceil((6000 - (now - waypoint.t)) / 1000)}s)` : 'wander';
     if (pointer.active) {
