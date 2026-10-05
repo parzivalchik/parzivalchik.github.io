@@ -47,6 +47,20 @@ body {
 }
 ::selection { background: var(--prompt); color: var(--bg); }
 .pane { max-width: 52rem; display: grid; gap: 44px; padding-top: 14px; }
+.side { display: grid; gap: 22px; align-content: start; }
+.status { display: grid; gap: 0; color: var(--muted); border: 1px solid var(--rule); background: var(--bg); padding: 10px 12px; max-width: 34rem; font-variant-numeric: tabular-nums; }
+.status .row { display: grid; grid-template-columns: 11ch minmax(0, 1fr); gap: 0 1ch; }
+.status .row span:first-child { color: var(--dim); }
+.status b { font-weight: 400; color: var(--fg); }
+@media (min-width: 1100px) {
+  .pane {
+    max-width: 92rem; margin-inline: auto;
+    grid-template-columns: minmax(0, 52rem) minmax(0, 34rem);
+    justify-content: space-between; column-gap: clamp(32px, 5vw, 96px);
+  }
+  .pane > :not(.side) { grid-column: 1; }
+  .pane > .side { grid-column: 2; grid-row: 1 / span 30; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 56px); align-self: start; }
+}
 h1, h2, h3, p { margin: 0; font-size: inherit; font-weight: inherit; }
 a { color: inherit; text-decoration: none; }
 a:focus-visible, button:focus-visible, summary:focus-visible { outline: 1px solid var(--prompt); outline-offset: 2px; }
@@ -159,21 +173,34 @@ img { max-width: 100%; }
     </ul>
   </section>
 
-  <section id="demo" aria-labelledby="demo-h">
-    <h2 class="cmd" id="demo-h">./turret_demo --field-lock</h2>
-    <div class="term-box">
-      <div class="hd"><span>field 144 × 144 in</span><span>drag the robot · scroll to rotate</span></div>
-      <canvas id="field" width="600" height="600" aria-label="Interactive field: the robot drives around while its turret stays aimed at the goal"></canvas>
-      <div class="readout">
-        <div><span>pose   </span><b id="rPos" style="font-weight:400">—</b></div>
-        <div><span>heading </span><b id="rHead" style="font-weight:400">—</b></div>
-        <div><span>turret </span><b id="rTur" style="font-weight:400">—</b></div>
-        <div><span>ticks   </span><b id="rTicks" style="font-weight:400">—</b></div>
+  <aside class="side" aria-label="Live demos">
+    <section id="demo" aria-labelledby="demo-h">
+      <h2 class="cmd" id="demo-h">./turret_demo --field-lock</h2>
+      <div class="term-box">
+        <div class="hd"><span>field 144 × 144 in</span><span>drag the robot · scroll to rotate</span></div>
+        <canvas id="field" width="600" height="600" aria-label="Interactive field: the robot drives around while its turret stays aimed at the goal"></canvas>
+        <div class="readout">
+          <div><span>pose   </span><b id="rPos" style="font-weight:400">—</b></div>
+          <div><span>heading </span><b id="rHead" style="font-weight:400">—</b></div>
+          <div><span>turret </span><b id="rTur" style="font-weight:400">—</b></div>
+          <div><span>ticks   </span><b id="rTicks" style="font-weight:400">—</b></div>
+        </div>
+        <div class="eq">turret = wrap(atan2(144 − y, 72 − x) − heading) · 1.62 ticks/° · limit ±585</div>
       </div>
-      <div class="eq">turret = wrap(atan2(144 − y, 72 − x) − heading) · 1.62 ticks/° · limit ±585</div>
-    </div>
-    <p class="dim" style="max-width:34rem">Same maths as my DECODE TeleOp: odometry gives the pose, the turret holds its aim on the goal while the robot moves.</p>
-  </section>
+      <p class="dim" style="max-width:34rem">Same maths as my DECODE TeleOp: odometry gives the pose, the turret holds its aim on the goal while the robot moves.</p>
+    </section>
+
+    <section aria-labelledby="sys-h">
+      <h2 class="cmd" id="sys-h">top</h2>
+      <div class="status" role="status" aria-live="off">
+        <div class="row"><span>robots</span><b id="sBots">—</b></div>
+        <div class="row"><span>mode</span><b id="sMode">wander</b></div>
+        <div class="row"><span>nearest</span><b id="sNear">—</b></div>
+        <div class="row"><span>cursor</span><b id="sCur">idle</b></div>
+        <div class="row"><span>trophies</span><b id="sTro">—</b></div>
+      </div>
+    </section>
+  </aside>
 
   <section id="record" aria-labelledby="rec-h">
     <h2 class="cmd" id="rec-h">cat competition.log</h2>
@@ -403,7 +430,7 @@ img { max-width: 100%; }
     mask = new Float32Array(cols * rows);
     const root = document.querySelector('main');
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: n => (!n.textContent.trim() || n.parentElement.closest('.term-box')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      acceptNode: n => (!n.textContent.trim() || n.parentElement.closest('.term-box, .status')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
     });
     const range = document.createRange();
     let n;
@@ -594,13 +621,27 @@ img { max-width: 100%; }
   document.addEventListener('pointerleave', () => { pointer.active = false; });
   addEventListener('blur', () => { pointer.active = false; });
   document.addEventListener('click', e => {
-    if (e.target.closest('a, button, canvas#field, input, .menu, .trophies, .chip, .term-box')) return;
+    if (e.target.closest('a, button, canvas#field, input, .menu, .trophies, .chip, .term-box, .status')) return;
     if (getSelection && String(getSelection()).length) return;
     waypoint = { x: e.clientX, y: e.clientY, t: performance.now() };
     ripples.push({ x: e.clientX, y: e.clientY, t: performance.now() });
     award('waypoint');
   });
 
+
+  let lastStat = 0;
+  const sEl = { bots: $('sBots'), mode: $('sMode'), near: $('sNear'), cur: $('sCur'), tro: $('sTro') };
+  function stat(now) {
+    sEl.bots.textContent = `${bots.length} active · steering`;
+    const wp = waypoint && now - waypoint.t < 6000;
+    sEl.mode.textContent = wp ? `arrive → waypoint (${Math.ceil((6000 - (now - waypoint.t)) / 1000)}s)` : 'wander';
+    if (pointer.active) {
+      let d = Infinity; for (const b of bots) d = Math.min(d, Math.hypot(b.x - pointer.x, b.y - pointer.y));
+      sEl.near.textContent = `${Math.round(d)} px from cursor${d < FLEE_R ? ' · fleeing' : ''}`;
+      sEl.cur.textContent = `${Math.round(pointer.x)}, ${Math.round(pointer.y)}`;
+    } else { sEl.near.textContent = '—'; sEl.cur.textContent = 'idle'; }
+    sEl.tro.textContent = `${TROPHIES.filter(x => got[x[0]]).length} / ${TROPHIES.length}`;
+  }
   sizeBg();
   addEventListener('resize', sizeBg);
   let lastBg = performance.now();
@@ -609,6 +650,7 @@ img { max-width: 100%; }
     if (pointer.active && now - pointer.lastMove > 4000) pointer.active = false;
     if (!reduce) update(dt, now);
     draw(now);
+    if (now - lastStat > 200) { lastStat = now; stat(now); }
     requestAnimationFrame(bgFrame);
   }
   requestAnimationFrame(bgFrame);
