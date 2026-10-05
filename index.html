@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Amiraly Bekturganov: FTC captain and lead programmer from Almaty. Robot navigation, localisation and control; author of Platapus Pathing.">
+<title>Amiraly Bekturganov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,500;112,700;125,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 72rem column on a faint 144-inch field grid; sections are labelled like field coordinates; the hero is a live turret field-lock demo */
+:root {
+  --bg: #f2f4f1;
+  --panel: #ffffff;
+  --ink: #15201c;
+  --muted: #5a6964;
+  --line: #d3dad6;
+  --grid: #e3e8e4;
+  --accent: #1d6b57;      /* solder-mask green */
+  --accent-soft: #dcebe5;
+  --goal: #c2410c;        /* goal marker */
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --body: "Instrument Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412; --panel: #151d1a; --ink: #e2e8e5; --muted: #93a39d;
+    --line: #2a3632; --grid: #1a2420; --accent: #57b897; --accent-soft: #1b2e27;
+    --goal: #f08a4b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412; --panel: #151d1a; --ink: #e2e8e5; --muted: #93a39d;
+  --line: #2a3632; --grid: #1a2420; --accent: #57b897; --accent-soft: #1b2e27;
+  --goal: #f08a4b; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-inline: 20px;
+  padding-block: 0 64px;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+.wrap { max-width: 72rem; margin-inline: auto; display: grid; gap: 72px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- header ---------- */
+header.top {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px 24px; padding-block: 24px; border-bottom: 1px solid var(--line);
+}
+.top .who { font-family: var(--display); font-weight: 700; font-stretch: 112%; letter-spacing: .01em; }
+.top nav { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--ink); }
+
+/* ---------- hero ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: center; }
+.coord { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.hero h1 { font-size: clamp(40px, 6.4vw, 76px); font-weight: 800; font-stretch: 125%; line-height: .98; letter-spacing: -.01em; margin-block: 14px 20px; }
+.hero .lede { font-size: 19px; max-width: 34rem; color: var(--ink); }
+.hero .lede em { font-style: normal; color: var(--accent); font-weight: 600; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.chip { font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--muted); }
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 28px; font-size: 15px; }
+.copy { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+.copy:hover { background: var(--accent-soft); }
+.email { font-family: var(--mono); font-size: 14px; user-select: all; }
+
+/* ---------- field demo ---------- */
+.field-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.field-head h3 { font-size: 14px; font-weight: 700; font-stretch: 112%; letter-spacing: .02em; }
+.field-head span { font-size: 12px; color: var(--muted); }
+canvas#field { width: 100%; max-width: 100%; aspect-ratio: 1 / 1; display: block; border-radius: 6px; touch-action: none; cursor: grab; }
+canvas#field.drag { cursor: grabbing; }
+.readout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.readout div { border-top: 1px solid var(--line); padding-top: 6px; }
+.readout dt { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.readout dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 15px; }
+.eq { font-family: var(--mono); font-size: 12.5px; color: var(--muted); overflow-x: auto; white-space: nowrap; padding-bottom: 2px; }
+.eq b { color: var(--ink); font-weight: 500; }
+
+/* ---------- sections ---------- */
+section { display: grid; gap: 28px; }
+.sec-head { display: grid; gap: 8px; max-width: 46rem; }
+.sec-head h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 800; font-stretch: 112%; line-height: 1.05; }
+.sec-head p { color: var(--muted); }
+
+/* record */
+.record { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.award { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px; display: grid; gap: 16px; }
+.award .big { font-family: var(--display); font-weight: 800; font-stretch: 112%; font-size: 26px; line-height: 1.15; }
+.award .big small { display: block; font-family: var(--body); font-weight: 500; font-size: 15px; color: var(--muted); margin-top: 6px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stats div { border-top: 2px solid var(--accent); padding-top: 8px; }
+.stats b { display: block; font-family: var(--display); font-stretch: 112%; font-size: 28px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 13px; color: var(--muted); }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; }
+.timeline li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 16px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+.timeline li:first-child { border-top: 1px solid var(--line); }
+.timeline .when { font-family: var(--mono); font-size: 13px; color: var(--muted); padding-top: 2px; }
+.timeline strong { display: block; font-weight: 600; }
+.timeline p { font-size: 15px; color: var(--muted); }
+
+/* projects */
+.projects { display: grid; gap: 20px; }
+.proj { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 40px; }
+.proj.lead { border-color: var(--accent); }
+.proj .meta { display: grid; gap: 12px; align-content: start; }
+.proj .kicker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.status { font-family: var(--body); font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.proj h3 { font-size: 26px; font-weight: 800; font-stretch: 112%; line-height: 1.1; }
+.proj .meta p { color: var(--ink); }
+.proj ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+.proj li { min-width: 0; }
+.proj li code:not(.formula) { overflow-wrap: anywhere; }
+.proj > * { min-width: 0; }
+.proj li { padding-left: 18px; position: relative; font-size: 15px; }
+.proj li::before { content: ""; position: absolute; left: 0; top: .62em; width: 8px; height: 2px; background: var(--accent); }
+.proj li code, .formula { font-family: var(--mono); font-size: 13px; }
+.formula { display: block; max-width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
+.links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; }
+
+/* letter */
+.letter { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 32px; align-items: end; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 36px; }
+.letter blockquote { margin: 0; font-family: var(--display); font-stretch: 112%; font-weight: 500; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.3; }
+.letter .by { font-size: 14px; color: var(--muted); display: grid; gap: 4px; }
+.letter .by strong { color: var(--ink); }
+
+/* education */
+.edu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.edu div { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 4px; }
+.edu dt { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.edu dd { margin: 0; }
+
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 20px; }
+
+@media (max-width: 860px) {
+  .hero, .record, .proj, .letter { grid-template-columns: minmax(0, 1fr); }
+  .edu { grid-template-columns: minmax(0, 1fr); }
+  .wrap { gap: 56px; }
+}
+@media (max-width: 480px) {
+  body { padding-inline: 16px; }
+  .readout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .proj { padding: 20px; }
+  .stats b { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="who">Amiraly Bekturganov</div>
+    <nav aria-label="Sections">
+      <a href="#record">Competition</a>
+      <a href="#work">Projects</a>
+      <a href="#reference">Reference</a>
+      <a href="#education">Education</a>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div>
+      <div class="coord">Robotics software · Almaty, Kazakhstan</div>
+      <h1 id="hero-title">I write the code that lets robots aim and drive themselves.</h1>
+      <p class="lede">FIRST Tech Challenge captain and lead programmer. I build <em>autonomous navigation, localization and control</em> for competition robots, and I'm writing my own open-source path-following library.</p>
+      <div class="facts">
+        <span class="chip">Captain · FTC #37973</span>
+        <span class="chip">Captain &amp; lead programmer · FTC #28888</span>
+        <span class="chip">Judges' Choice Award, 2025</span>
+        <span class="chip">Kazakhstan national championship</span>
+      </div>
+      <div class="contact">
+        <span class="email" id="email">amiralybekturganov@gmail.com</span>
+        <button class="copy" id="copyBtn" type="button">Copy email</button>
+        <a href="https://github.com/parzivalchik" target="_blank" rel="noopener">github.com/parzivalchik</a>
+      </div>
+    </div>
+
+    <figure class="field-card" style="margin:0">
+      <div class="field-head">
+        <h3>Field-locked turret, live</h3>
+        <span>Drag the robot. The turret keeps aiming at the goal.</span>
+      </div>
+      <canvas id="field" width="600" height="600" aria-label="Interactive 144 by 144 inch field: a robot drives around while its turret stays pointed at the goal"></canvas>
+      <dl class="readout">
+        <div><dt>Robot x, y (in)</dt><dd id="rPos">—</dd></div>
+        <div><dt>Heading</dt><dd id="rHead">—</dd></div>
+        <div><dt>Turret angle</dt><dd id="rTur">—</dd></div>
+        <div><dt>Encoder target</dt><dd id="rTicks">—</dd></div>
+      </dl>
+      <figcaption class="eq">turret = <b>wrap(atan2(144 − y, 72 − x) − heading)</b> · 1.62 ticks/° · soft limit ±585 ticks</figcaption>
+    </figure>
+  </section>
+
+  <section id="record" aria-labelledby="record-title">
+    <div class="sec-head">
+      <div class="coord">Competition</div>
+      <h2 id="record-title">FIRST robotics record</h2>
+      <p>Competing since 2024 in two FIRST programmes, as lead programmer and as captain.</p>
+    </div>
+    <div class="record">
+      <ol class="timeline">
+        <li>
+          <span class="when">2026–27</span>
+          <div><strong>Captain, FTC #37973 (Galaxy International School)</strong>
+          <p>Leading a new rookie team and setting up its technical and organisational processes, while continuing to lead #28888.</p></div>
+        </li>
+        <li>
+          <span class="when">2025–26<br>DECODE</span>
+          <div><strong>Captain &amp; lead programmer, FTC #28888 errorda</strong>
+          <p>Five events, finishing at the Kazakhstan Central Asia Championship in Astana (Janibek Division, February 2026). Judges' Choice Award at the Almaty FIRST Regional.</p></div>
+        </li>
+        <li>
+          <span class="when">2024</span>
+          <div><strong>FIRST Global Challenge</strong>
+          <p>My team advanced to the playoffs at the Kazakhstan national stage.</p></div>
+        </li>
+      </ol>
+      <div class="award">
+        <div class="coord">DECODE 2025–26 highlight</div>
+        <div class="big">Judges' Choice Award, 3rd place<small>Almaty FIRST Regional · 22–23 November 2025</small></div>
+        <div class="stats">
+          <div><b class="mono">9th</b><span>qualification rank at the regional</span></div>
+          <div><b class="mono">4–1</b><span>qualification record there</span></div>
+          <div><b class="mono">5</b><span>events in the season, incl. nationals</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work" aria-labelledby="work-title">
+    <div class="sec-head">
+      <div class="coord">Projects</div>
+      <h2 id="work-title">What I've built</h2>
+      <p>Robot software that ran in matches, a library I'm writing to replace what I used, and two independent software projects.</p>
+    </div>
+    <div class="projects">
+
+      <article class="proj lead">
+        <div class="meta">
+          <div class="kicker"><span class="status">In development</span><span>Java · MIT licence · open source</span></div>
+          <h3>Platapus Pathing</h3>
+          <p>A path-following library for FTC robots. It combines time-consistent motion profiling with aggressive on-path correction, and adds sensor fusion and online self-tuning.</p>
+          <div class="links"><a href="https://github.com/parzivalchik/PlatapusPathing" target="_blank" rel="noopener">View on GitHub</a></div>
+        </div>
+        <ul>
+          <li><strong>Hybrid follower.</strong> Each update reads the motion profile, resolves path geometry, applies feedforward, then adds PID correction. Wheel powers are scaled rather than clipped, so direction stays correct at full speed.</li>
+          <li><strong>Error-scaled correction.</strong> Correction strength grows smoothly with tracking error, with no threshold to chatter around.<code class="formula">authority = 1 + (A − 1) · clamp(error / scale, 0, 1)</code></li>
+          <li><strong>EKF pose fusion.</strong> An extended Kalman filter blends odometry and IMU into one pose estimate, with an interface ready for vision.</li>
+          <li><strong>Online feedforward tuning.</strong> Fits <code>u = kS·sign(v) + kV·v + kA·a</code> by recursive least squares while the robot drives, and saves the gains between runs.</li>
+          <li><strong>Stall detection.</strong> Compares each motor's current against the model's prediction at the commanded velocity, so a jammed wheel is caught.</li>
+          <li><strong>Tested core.</strong> Pure-Java core with 274 headless unit tests, plus a collision planner for alliance paths using the separating axis theorem. It has not run on a robot yet; hardware bring-up is the next step.</li>
+        </ul>
+      </article>
+
+      <article class="proj">
+        <div class="meta">
+          <div class="kicker"><span class="status">Used at 5 events</span><span>Java · FTC SDK · Pedro Pathing</span></div>
+          <h3>DECODE robot software</h3>
+          <p>Software for team #28888's 2025–26 robot: a mecanum drive with a two-stage intake, a flywheel shooter and a rotating turret.</p>
+          <div class="links"><a href="https://github.com/parzivalchik/ftc-28888-decode" target="_blank" rel="noopener">View code on GitHub</a></div>
+        </div>
+        <ul>
+          <li><strong>Field-locked turret.</strong> Uses goBILDA Pinpoint odometry to compute the angle to the goal every loop (the demo above). PD control with static-friction feedforward and encoder soft limits.</li>
+          <li><strong>Vision aiming.</strong> AprilTag tracking with manual camera exposure and gain to cut motion blur while the robot moves.</li>
+          <li><strong>Autonomous routines.</strong> State-machine autos on Pedro Pathing that drive, intake and score several cycles in 30 seconds.</li>
+          <li><strong>Shooter control.</strong> Closed-loop flywheel velocity (PIDF) with switchable shot speeds. Bulk sensor reads keep the loop fast, and touch sensors make the controller rumble when a game piece is loaded.</li>
+        </ul>
+      </article>
+
+      <article class="proj">
+        <div class="meta">
+          <div class="kicker"><span class="status">Ongoing</span><span>Python · Java · Stable-Baselines3</span></div>
+          <h3>Independent reinforcement learning research</h3>
+          <p>A deep RL agent for a complex, long-horizon task in a 3D simulated environment, built without an off-the-shelf research framework.</p>
+        </div>
+        <ul>
+          <li><strong>Custom environment interface.</strong> A Java server streams simulation state over sockets to a Python trainer.</li>
+          <li><strong>Long horizons.</strong> Symbolic observations and a discretised action space keep the task learnable.</li>
+          <li><strong>Training method.</strong> Curriculum-based rewards, hierarchical skill composition, and imitation learning to bootstrap early behaviour.</li>
+        </ul>
+      </article>
+
+      <article class="proj">
+        <div class="meta">
+          <div class="kicker"><span class="status">In development</span><span>Next.js · TypeScript · Prisma · PostgreSQL</span></div>
+          <h3>TopicMap</h3>
+          <p>A revision platform for Cambridge A-Level students that shows which syllabus topics you are weak in and generates practice for them.</p>
+        </div>
+        <ul>
+          <li>Physics and Mathematics syllabi mapped into topic hierarchies, shown as performance heatmaps.</li>
+          <li>AI-generated exam-style questions, now being produced across 87 topics, with maths rendered by KaTeX.</li>
+        </ul>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="reference" aria-labelledby="ref-title">
+    <h2 id="ref-title" class="coord" style="font-family:var(--mono);font-size:12px;font-weight:400">Reference</h2>
+    <div class="letter">
+      <blockquote>“He does not limit himself to completing assigned programming tasks, but actively seeks to understand more advanced approaches and develop his own technical solutions.”</blockquote>
+      <div class="by">
+        <strong>Daniyar Yermatov</strong>
+        <span>FIRST Program Delivery Partner in Central Asia, USTEM Foundation</span>
+        <span>Full letter available on request.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="education" aria-labelledby="edu-title">
+    <div class="sec-head">
+      <div class="coord">Education</div>
+      <h2 id="edu-title">School</h2>
+    </div>
+    <dl class="edu">
+      <div><dt>School</dt><dd>Galaxy International School, Almaty</dd></div>
+      <div><dt>Cambridge International A-Levels</dt><dd>Computer Science (9618), Mathematics (9709), Physics (9702)</dd></div>
+      <div><dt>English</dt><dd>IELTS Academic 7.5</dd></div>
+    </dl>
+  </section>
+
+  <footer>
+    <span>Amiraly Bekturganov · applying to electrical, mechatronic and robotics engineering, 2027 entry</span>
+    <span class="mono">amiralybekturganov@gmail.com</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // Copy email
+  const btn = document.getElementById('copyBtn');
+  const email = document.getElementById('email').textContent;
+  btn.addEventListener('click', () => {
+    const done = () => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy email', 1600); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(document.getElementById('email'));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected, press Ctrl/Cmd+C';
+    };
+    try { navigator.clipboard.writeText(email).then(done, fallback); } catch (e) { fallback(); }
+  });
+
+  // Field-lock demo: same math as the DECODE TeleOp
+  const TARGET = { x: 72, y: 144 };
+  const TICKS_PER_DEG = 1.62, LIMIT = 585, KP = 0.02;
+  const cv = document.getElementById('field');
+  const ctx = cv.getContext('2d');
+  const out = {
+    pos: document.getElementById('rPos'), head: document.getElementById('rHead'),
+    tur: document.getElementById('rTur'), ticks: document.getElementById('rTicks')
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let robot = { x: 40, y: 40, h: 0 };
+  let turretDeg = 0;          // actual turret angle (lags target, like a P controller)
+  let dragging = false, t = 0, lastUser = -1e9;
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const wrap = a => { while (a > 180) a -= 360; while (a < -180) a += 360; return a; };
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = cv.clientWidth;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(w * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function toPx(x, y, s) { return [x / 144 * s, (144 - y) / 144 * s]; }
+
+  function draw() {
+    const s = cv.clientWidth;
+    const ink = css('--ink'), muted = css('--muted'), line = css('--line'), acc = css('--accent'), goal = css('--goal'), bg = css('--bg'), panel = css('--panel');
+    ctx.clearRect(0, 0, s, s);
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, s, s);
+    // tiles: 6 x 24in
+    ctx.strokeStyle = line; ctx.lineWidth = 1;
+    for (let i = 1; i < 6; i++) {
+      const p = i * s / 6;
+      ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(s, p); ctx.stroke();
+    }
+    ctx.strokeStyle = muted; ctx.lineWidth = 2; ctx.strokeRect(1, 1, s - 2, s - 2);
+    // axis labels
+    ctx.fillStyle = muted; ctx.font = `11px ${css('--mono')}`;
+    ctx.fillText('0', 6, s - 6); ctx.fillText('144 in', s - 48, s - 6);
+
+    // goal
+    const [gx, gy] = toPx(TARGET.x, TARGET.y, s);
+    ctx.fillStyle = goal;
+    ctx.beginPath(); ctx.moveTo(gx - 14, 0); ctx.lineTo(gx + 14, 0); ctx.lineTo(gx, 16); ctx.closePath(); ctx.fill();
+    ctx.fillText('goal (72, 144)', gx + 18, 13);
+
+    // robot
+    const [rx, ry] = toPx(robot.x, robot.y, s);
+    const size = 18 / 144 * s;
+    // line of fire
+    const fieldAngle = (robot.h + turretDeg) * Math.PI / 180;
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = goal; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx + Math.cos(fieldAngle) * s * 1.5, ry - Math.sin(fieldAngle) * s * 1.5); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.save(); ctx.translate(rx, ry); ctx.rotate(-robot.h * Math.PI / 180);
+    ctx.fillStyle = panel; ctx.strokeStyle = ink; ctx.lineWidth = 2;
+    ctx.fillRect(-size / 2, -size / 2, size, size); ctx.strokeRect(-size / 2, -size / 2, size, size);
+    // heading notch
+    ctx.fillStyle = ink; ctx.fillRect(size / 2 - 4, -3, 4, 6);
+    // turret
+    ctx.rotate(-turretDeg * Math.PI / 180);
+    ctx.fillStyle = acc;
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.26, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(0, -3, size * 0.62, 6);
+    ctx.restore();
+  }
+
+  function step(dt) {
+    if (!dragging && performance.now() - lastUser > 2500) {
+      // auto-drive a smooth lap so the page shows the behaviour at rest
+      t += dt * (reduce ? 0 : 0.35);
+      robot.x = 72 + 46 * Math.sin(t);
+      robot.y = 58 + 34 * Math.sin(2 * t);
+      robot.h = wrap(Math.atan2(68 * Math.cos(2 * t), 46 * Math.cos(t)) * 180 / Math.PI);
+    }
+    const angleToGoal = Math.atan2(TARGET.y - robot.y, TARGET.x - robot.x) * 180 / Math.PI;
+    const target = wrap(angleToGoal - robot.h);
+    const err = wrap(target - turretDeg);
+    // P control with a power cap, converging quickly (visual analogue of TURRET_P)
+    const ticksErr = err * TICKS_PER_DEG;
+    const pwr = Math.max(-1, Math.min(1, ticksErr * KP));
+    turretDeg = wrap(turretDeg + pwr * 420 * dt);
+    let ticks = Math.round(target * TICKS_PER_DEG);
+    ticks = Math.max(-LIMIT, Math.min(LIMIT, ticks));
+    out.pos.textContent = `${robot.x.toFixed(1)}, ${robot.y.toFixed(1)}`;
+    out.head.textContent = `${robot.h.toFixed(0)}°`;
+    out.tur.textContent = `${target.toFixed(1)}°`;
+    out.ticks.textContent = `${ticks}`;
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    step(dt); draw();
+    requestAnimationFrame(frame);
+  }
+
+  function pointer(e) {
+    const r = cv.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * 144;
+    const y = 144 - (e.clientY - r.top) / r.height * 144;
+    robot.x = Math.max(9, Math.min(135, x));
+    robot.y = Math.max(9, Math.min(135, y));
+  }
+  cv.addEventListener('pointerdown', e => { dragging = true; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); pointer(e); lastUser = performance.now(); });
+  cv.addEventListener('pointermove', e => { if (dragging) { pointer(e); lastUser = performance.now(); } });
+  const end = () => { dragging = false; cv.classList.remove('drag'); lastUser = performance.now(); };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('wheel', e => { e.preventDefault(); robot.h = wrap(robot.h + (e.deltaY > 0 ? 10 : -10)); lastUser = performance.now(); }, { passive: false });
+
+  addEventListener('resize', resize);
+  resize(); step(0); draw();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
