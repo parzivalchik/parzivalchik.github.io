@@ -86,6 +86,7 @@ function setBots(n) {
 }
 $('botMinus').addEventListener('click', () => setBots(bots.length - 1));
 $('botPlus').addEventListener('click', () => setBots(bots.length + 1));
+$('sBots').textContent = `${bots.length}`;
 const MAX_SPEED = 95, MAX_FORCE = 220, ARRIVE_R = 90, FLEE_R = 130, SEP_R = 40;
 
 function limit(v, m) { const l = Math.hypot(v[0], v[1]); return l > m ? [v[0] / l * m, v[1] / l * m] : v; }
