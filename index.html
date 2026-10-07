@@ -134,13 +134,17 @@
         </ul>
       </li>
       <li class="proj">
-        <span class="head" data-decode>rl_research/</span>
-        <span class="meta">python · java · stable-baselines3 · ongoing</span>
-        <span class="muted">Deep RL agent for a long-horizon task in a 3D simulated environment, without an off-the-shelf research framework.</span>
+        <span class="head" data-decode>minecraft_diamond_rl/</span>
+        <span class="meta">java · python · PPO (stable-baselines3) · fabric 1.21.1 · in training</span>
+        <span class="muted">An agent that learns from 64×64 screen pixels to dig to diamond ore in Minecraft without dying. A game mod turns Minecraft into a training environment; a Python trainer learns from it.</span>
         <ul class="tree">
-          <li>own environment interface: Java server streams state over sockets to a Python trainer</li>
-          <li>symbolic observations and a discretised action space</li>
-          <li>curriculum rewards, hierarchical skills, imitation-learning bootstrap</li>
+          <li>mod serves the game over a local socket and freezes the world between steps, so slow Python never desyncs it</li>
+          <li>the policy sees only 4 stacked frames plus health, food and fire; diamond distance is used for the reward only</li>
+          <li>shaped rewards and a 5-stage curriculum of random arenas, advancing at 60% success</li>
+          <li>3 training runs, each fixing a diagnosed failure: ore farming → reward reweighting; tunnelling stall → a tunnel action</li>
+          <li><span class="ok">✓</span> stages 0–1 solved at 97–100% success · stage 2 at 24%, still dying in lava</li>
+          <li>149 tests: 70 Python, 79 JUnit</li>
+          <li><a class="chip" href="https://github.com/parzivalchik/minecraft-diamond-rl" target="_blank" rel="noopener">github.com/parzivalchik/minecraft-diamond-rl</a></li>
         </ul>
       </li>
       <li class="proj">
