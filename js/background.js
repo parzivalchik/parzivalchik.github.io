@@ -151,7 +151,7 @@ function draw(now) {
         bctx.fillStyle = k > 0.55 ? green : muted;
         bctx.fillText(k > 0.55 ? '+' : '·', c * CW, r * LINE);
       } else {
-        bctx.globalAlpha = 0.28 * quiet(c * CW, r * LINE); bctx.fillStyle = dim;
+        bctx.globalAlpha = 0.5 * quiet(c * CW, r * LINE); bctx.fillStyle = css('--field');
         bctx.fillText('·', c * CW, r * LINE);
       }
     }
