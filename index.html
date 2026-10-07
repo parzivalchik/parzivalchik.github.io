@@ -79,6 +79,8 @@
     <ul class="tree">
       <li><span class="item"><span class="k">2026–27</span>  captain, FTC #37973</span>
         <span class="note">new rookie team at Galaxy International School</span></li>
+      <li><span class="item"><span class="k">2026   </span>  World Space Olympiad · national stage</span>
+        <span class="note">CanSat rocket design, team of 4 · I did the CAD, the flight model and the avionics schematic</span></li>
       <li><span class="item"><span class="k">2025–26</span>  captain &amp; lead programmer, FTC #28888 errorda · DECODE</span>
         <ul class="tree">
           <li><span class="tag">★ Judges' Choice Award, 3rd place</span> <span class="muted">· Almaty FIRST Regional, Nov 2025</span> <a class="chip" href="https://ftcscout.org/events/2025/KZALQ1" target="_blank" rel="noopener">verify</a></li>
@@ -131,6 +133,19 @@
           <li>state-machine autonomous routines on Pedro Pathing</li>
           <li>closed-loop flywheel velocity (PIDF), bulk reads, rumble on game-piece load</li>
           <li><a class="chip" data-trophy="code" href="https://github.com/parzivalchik/ftc-28888-decode" target="_blank" rel="noopener">github.com/parzivalchik/ftc-28888-decode</a></li>
+        </ul>
+      </li>
+      <li class="proj">
+        <span class="head" data-decode>wso_cansat_rocket/</span>
+        <span class="meta">autodesk fusion · openrocket · easyeda · world space olympiad, national stage · design entry</span>
+        <span class="muted">A single-stage model rocket carrying a CanSat avionics payload, designed by a team of four. I did all of the mechanical CAD, the OpenRocket flight model and the flight-computer schematic. It was not built: we didn't have the resources.</span>
+        <ul class="tree">
+          <li>airframe parts designed for 3D printing in PETG, each with a reason: carbon-fibre avionics bay for stiffness so the IMU sees less vibration, 100% infill motor mount, gyroid-infill fins to keep the tail light</li>
+          <li>nose cone with a ballast bay to set the centre of gravity</li>
+          <li>flight computer: ESP32-S3, LSM9DS1 IMU, BME280 barometer, SX1278 LoRa telemetry, microSD logging</li>
+          <li>ripstop parachute deployed by the motor's ejection charge, with Kevlar and basalt-fabric heat protection</li>
+          <li>known issues before a real flight are written up in the repo: rail exit speed and descent rate</li>
+          <li><a class="chip" href="https://github.com/parzivalchik/wso-cansat-rocket" target="_blank" rel="noopener">github.com/parzivalchik/wso-cansat-rocket</a></li>
         </ul>
       </li>
       <li class="proj">
